@@ -217,8 +217,8 @@
         .login({ email: email, password: password }, function () { setLoading(submitBtn, true, 'Still connecting…'); })
         .then(function (res) {
           var data = res && res.data ? res.data : res;
-          if (!data || !data.token) throw new Error('Unexpected response from server.');
-          setSession({ token: data.token, user: data.user || {} });
+          if (!data || !data.accessToken) throw new Error('Unexpected response from server.');
+          setSession({ token: data.accessToken, user: data.user || {} });
           statusEl.textContent = 'Welcome back' + (data.user && data.user.name ? ', ' + data.user.name.split(' ')[0] : '') + '!';
           statusEl.className = 'text-sm mt-1 min-h-[1.25rem] text-verified font-semibold';
           renderAuthAreas();
@@ -275,15 +275,15 @@
         .signup({ name: name, email: email, phone: phone, password: password }, function () { setLoading(submitBtn, true, 'Still connecting…'); })
         .then(function (res) {
           var data = res && res.data ? res.data : res;
-          if (data && data.token) {
-            setSession({ token: data.token, user: data.user || {} });
+          if (data && data.accessToken) {
+            setSession({ token: data.accessToken, user: data.user || {} });
             renderAuthAreas();
           }
           statusEl.textContent = 'Account created! You can now log in.';
           statusEl.className = 'text-sm mt-1 min-h-[1.25rem] text-verified font-semibold';
           signupForm.reset();
           setTimeout(function () {
-            if (data && data.token) { closeModal(); }
+            if (data && data.accessToken) { closeModal(); }
             else { switchTab('login'); }
           }, 700);
         })
