@@ -36,6 +36,29 @@
     }
     function getId(item) { return item && (item._id || item.id); }
 
+    /* ---------------- Mobile sidebar ----------------
+       (Declared before the routing block below, because showSection()
+       calls closeMobileSidebar() as soon as the page loads. If these
+       vars/functions were defined after routeFromHash() ran, `sidebar`
+       would still be undefined at that point and the resulting
+       TypeError would silently abort the rest of this script — which
+       is why the hamburger menu stopped opening and none of the
+       dashboard's dynamic data (properties/bookings/blog) loaded.) */
+    var sidebar = document.getElementById('adminSidebar');
+    var sidebarOverlay = document.getElementById('adminSidebarOverlay');
+    var sidebarToggle = document.getElementById('adminSidebarToggle');
+
+    function openMobileSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebarOverlay.classList.remove('hidden');
+    }
+    function closeMobileSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebarOverlay.classList.add('hidden');
+    }
+    if (sidebarToggle) sidebarToggle.addEventListener('click', openMobileSidebar);
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
     /* ---------------- Sidebar / section routing ---------------- */
     var sections = ['overview', 'properties', 'bookings', 'blog'];
     var pageTitle = document.getElementById('adminPageTitle');
@@ -70,22 +93,6 @@
     }
     window.addEventListener('hashchange', routeFromHash);
     routeFromHash();
-
-    /* ---------------- Mobile sidebar ---------------- */
-    var sidebar = document.getElementById('adminSidebar');
-    var sidebarOverlay = document.getElementById('adminSidebarOverlay');
-    var sidebarToggle = document.getElementById('adminSidebarToggle');
-
-    function openMobileSidebar() {
-      sidebar.classList.remove('-translate-x-full');
-      sidebarOverlay.classList.remove('hidden');
-    }
-    function closeMobileSidebar() {
-      sidebar.classList.add('-translate-x-full');
-      sidebarOverlay.classList.add('hidden');
-    }
-    if (sidebarToggle) sidebarToggle.addEventListener('click', openMobileSidebar);
-    if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
 
     /* ---------------- Overview ---------------- */
     function loadOverview() {
