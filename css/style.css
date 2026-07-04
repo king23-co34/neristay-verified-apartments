@@ -74,7 +74,7 @@ h1,h2,h3,h4,.font-display{
 .hero-bg{
   background-image:
     linear-gradient(180deg, rgba(20,24,31,.78) 0%, rgba(20,24,31,.55) 45%, rgba(20,24,31,.92) 100%),
-    url('https://images.unsplash.com/photo-1768638687896-35bde623d532?fm=jpg&q=80&w=1920&auto=format&fit=crop');
+    url('https://images.unsplash.com/photo-1731336478850-6bce7235e320?fm=jpg&q=80&w=1920&auto=format&fit=crop');
   background-size:cover;
   background-position:center;
 }
@@ -166,4 +166,117 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 /* Back to top */
 #backToTop{
   transition:opacity .25s ease, transform .25s ease;
+}
+
+/* ===========================================================
+   Loading — "Opay style" brand spinner
+   -----------------------------------------------------------
+   A compact rotating ring (brass → clay gradient) used for
+   every async moment on the site: form submissions, chat
+   replies, and live apartment/blog data loading.
+   =========================================================== */
+.neri-spin{
+  display:inline-block;
+  border-radius:50%;
+  border:2.5px solid rgba(176,138,78,.22);
+  border-top-color:var(--clay);
+  border-right-color:var(--brass);
+  width:18px;height:18px;
+  animation:neri-rotate .75s cubic-bezier(.5,0,.5,1) infinite;
+  flex-shrink:0;
+}
+.neri-spin-lg{width:34px;height:34px;border-width:3.5px;}
+
+/* Inline loader for buttons: spinner + label */
+.neri-btn-loading{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+}
+
+/* Full brand loader — spinning ring around the Neristay seal,
+   used for section/page-level loading states (apartments grid,
+   blog list, single blog post). */
+.neri-loader-brand{
+  position:relative;
+  width:60px;height:60px;
+  margin:0 auto;
+}
+.neri-loader-brand::before{
+  content:'';
+  position:absolute;inset:0;
+  border-radius:50%;
+  border:3px solid rgba(176,138,78,.18);
+  border-top-color:var(--clay);
+  border-right-color:var(--brass);
+  animation:neri-rotate .9s cubic-bezier(.5,0,.5,1) infinite;
+}
+.neri-loader-brand::after{
+  content:'N';
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:20px;
+  color:var(--clay);
+  animation:neri-pulse 1.4s ease-in-out infinite;
+}
+
+.neri-loading-panel{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:56px 20px;
+  text-align:center;
+}
+.neri-loading-panel p{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--slate);
+  opacity:.65;
+}
+
+@keyframes neri-rotate{to{transform:rotate(360deg);}}
+@keyframes neri-pulse{
+  0%,100%{opacity:1; transform:scale(1);}
+  50%{opacity:.55; transform:scale(.88);}
+}
+
+/* Skeleton shimmer placeholders for cards while data loads */
+.neri-skel{
+  background:linear-gradient(100deg, #EDE7D9 30%, #F8F4EA 50%, #EDE7D9 70%);
+  background-size:220% 100%;
+  animation:neri-shimmer 1.3s ease infinite;
+  border-radius:6px;
+}
+@keyframes neri-shimmer{
+  0%{background-position:120% 0;}
+  100%{background-position:-20% 0;}
+}
+.neri-skel-card{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.05);
+  border-radius:12px;
+  overflow:hidden;
+}
+.neri-skel-card .neri-skel{border-radius:0;}
+.neri-skel-card .neri-skel-body{padding:18px;}
+
+.neri-error-note{
+  font-size:13px;
+  color:var(--slate);
+  opacity:.75;
+  text-align:center;
+  padding:28px 16px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .neri-spin, .neri-loader-brand::before, .neri-loader-brand::after, .neri-skel{
+    animation:none;
+  }
 }

@@ -86,11 +86,24 @@
     });
   });
 
-  /* Contact / booking form */
+  /* Contact / booking form — wired to the live Neristay API */
   var form = document.getElementById('bookingForm');
   if (form) {
     var statusEl = document.getElementById('formStatus');
     var submitBtn = document.getElementById('formSubmit');
+    var submitBtnDefaultHTML = submitBtn.innerHTML;
+
+    function setSubmitLoading(isLoading, label) {
+      if (isLoading) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML =
+          '<span class="neri-btn-loading"><span class="neri-spin" style="border-color:rgba(255,255,255,.3);' +
+          'border-top-color:#fff;border-right-color:#fff;"></span>' + (label || 'Sending…') + '</span>';
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = submitBtnDefaultHTML;
+      }
+    }
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -113,41 +126,55 @@
         return;
       }
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Sending…';
       statusEl.textContent = '';
+      setSubmitLoading(true, 'Sending…');
 
-      var payload = new FormData(form);
-      payload.append('_subject', 'New short let enquiry — Neristay website');
-      payload.append('_captcha', 'false');
+      var waMessage = encodeURIComponent(
+        'Hello Neristay, my name is ' + name + '. I would like to check availability' +
+        (checkin ? ' from ' + checkin : '') + '. ' + (message || '')
+      );
 
-      fetch('https://formsubmit.co/ajax/info@neri.com', {
-        method: 'POST',
-        headers: { Accept: 'application/json' },
-        body: payload
-      })
-        .then(function (res) { return res.ok ? res.json() : Promise.reject(); })
-        .then(function () {
+      function showWhatsAppFallback(note) {
+        statusEl.innerHTML =
+          (note ? note + ' ' : '') +
+          '<a class="underline text-clay font-semibold" href="https://wa.me/2347064356536?text=' +
+          waMessage + '" target="_blank" rel="noopener">Tap here to send your request on WhatsApp</a>.';
+        statusEl.className = 'text-sm mt-3 text-slate';
+      }
+
+      if (!window.NeriAPI) {
+        showWhatsAppFallback('Our booking desk is temporarily unreachable —');
+        setSubmitLoading(false);
+        return;
+      }
+
+      window.NeriAPI
+        .createBooking(
+          {
+            name: name,
+            phone: phone,
+            checkin: checkin || undefined,
+            message: message || undefined,
+            source: 'website_form'
+          },
+          function onSlowRetry() {
+            setSubmitLoading(true, 'Still connecting…');
+          }
+        )
+        .then(function (res) {
+          var thankYouName = name.split(' ')[0];
+          var serverMessage = res && res.data && res.data.message;
           statusEl.textContent =
-            'Thank you, ' + name.split(' ')[0] + '. Our team will contact you shortly on ' + phone + '.';
+            serverMessage || 'Thank you, ' + thankYouName + '. Our team will contact you shortly on ' + phone + '.';
           statusEl.className = 'text-sm mt-3 text-verified font-semibold';
           form.reset();
         })
         .catch(function () {
           /* Fallback: open WhatsApp with prefilled enquiry so no lead is lost */
-          var waMessage = encodeURIComponent(
-            'Hello Neristay, my name is ' + name + '. I would like to check availability' +
-            (checkin ? ' from ' + checkin : '') + '. ' + (message || '')
-          );
-          statusEl.innerHTML =
-            'We could not reach our booking desk automatically — ' +
-            '<a class="underline text-clay font-semibold" href="https://wa.me/2347064356536?text=' +
-            waMessage + '" target="_blank" rel="noopener">tap here to send us your request on WhatsApp</a>.';
-          statusEl.className = 'text-sm mt-3 text-slate';
+          showWhatsAppFallback('We could not reach our booking desk automatically —');
         })
         .finally(function () {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Check Availability';
+          setSubmitLoading(false);
         });
     });
   }
