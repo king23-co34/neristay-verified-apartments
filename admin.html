@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en-NG">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Neristay</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%2314181F'/%3E%3Ctext x='50' y='68' font-size='58' font-family='Georgia,serif' fill='%23B08A4E' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#14181F', paper: '#FAF7F1', clay: '#A8481C', 'clay-dark': '#822F0F',
+          brass: '#B08A4E', verified: '#2F6650', slate: '#3C3A35'
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'], body: ['Manrope', 'sans-serif'], mono: ['"IBM Plex Mono"', 'monospace']
+        }
+      }
+    }
+  };
+</script>
+<link rel="stylesheet" href="css/style.css">
+
+<script>
+  /* Guard: bounce non-admins before the page paints. auth.js re-checks
+     on load too, but this inline check avoids a flash of dashboard UI. */
+  (function () {
+    try {
+      var raw = window.localStorage.getItem('neri_auth');
+      var session = raw ? JSON.parse(raw) : null;
+      if (!session || !session.user || session.user.role !== 'admin') {
+        window.location.replace('index.html');
+      }
+    } catch (e) {
+      window.location.replace('index.html');
+    }
+  })();
+</script>
+</head>
+<body class="bg-paper text-slate font-body antialiased">
+<div id="neriPageLoader" class="neri-page-loader" aria-hidden="true">
+  <div class="neri-loader-brand"></div>
+</div>
+<script>
+(function(){
+  function hidePreloader(){
+    var el = document.getElementById('neriPageLoader');
+    if (!el) return;
+    el.classList.add('neri-page-loader-hide');
+    window.setTimeout(function(){ el.remove(); }, 500);
+  }
+  if (document.readyState === 'complete') {
+    window.setTimeout(hidePreloader, 300);
+  } else {
+    window.addEventListener('load', function(){ window.setTimeout(hidePreloader, 300); });
+  }
+  window.setTimeout(hidePreloader, 2500); /* never block the page for long */
+})();
+</script>
+
+<div class="flex min-h-screen">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="adminSidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-ink text-paper flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-200">
+    <div class="h-[72px] flex items-center gap-2.5 px-6 border-b border-white/10">
+      <span class="seal w-9 h-9 rounded-full text-brass font-display text-lg">N</span>
+      <span class="text-paper font-display text-lg tracking-wide">Neristay</span>
+    </div>
+
+    <nav class="flex-1 px-3 py-5 space-y-1">
+      <a href="#overview" data-section="overview" class="admin-nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Overview
+      </a>
+      <a href="#properties" data-section="properties" class="admin-nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+        Properties
+      </a>
+      <a href="#bookings" data-section="bookings" class="admin-nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Bookings
+      </a>
+      <a href="#blog" data-section="blog" class="admin-nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Blog Posts
+      </a>
+    </nav>
+
+    <div class="px-3 pb-5 pt-3 border-t border-white/10 space-y-1">
+      <a href="index.html" class="admin-nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Site
+      </a>
+      <a href="#" data-auth-logout class="admin-nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        Log Out
+      </a>
+    </div>
+  </aside>
+
+  <div id="adminSidebarOverlay" class="fixed inset-0 bg-ink/50 z-30 hidden md:hidden"></div>
+
+  <!-- ================= MAIN ================= -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- Topbar -->
+    <header class="h-[72px] bg-white border-b border-black/5 flex items-center justify-between px-5 sm:px-8 sticky top-0 z-20">
+      <div class="flex items-center gap-3">
+        <button id="adminSidebarToggle" class="md:hidden text-ink p-2 -ml-2" aria-label="Toggle menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <h1 id="adminPageTitle" class="font-display text-xl sm:text-2xl font-semibold text-ink">Overview</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="adminUserName" class="hidden sm:block text-sm font-semibold text-slate/70"></span>
+        <span class="seal w-9 h-9 rounded-full text-clay font-display text-sm" aria-hidden="true" id="adminUserInitial">A</span>
+      </div>
+    </header>
+
+    <main class="flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto">
+
+      <!-- ============ OVERVIEW ============ -->
+      <section id="section-overview" class="admin-section">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div class="admin-card p-6">
+            <p class="font-eyebrow text-clay text-[10px] uppercase mb-2">Properties</p>
+            <p id="statProperties" class="font-display text-3xl font-semibold text-ink">—</p>
+          </div>
+          <div class="admin-card p-6">
+            <p class="font-eyebrow text-clay text-[10px] uppercase mb-2">Total Bookings</p>
+            <p id="statBookings" class="font-display text-3xl font-semibold text-ink">—</p>
+          </div>
+          <div class="admin-card p-6">
+            <p class="font-eyebrow text-clay text-[10px] uppercase mb-2">Pending Bookings</p>
+            <p id="statPending" class="font-display text-3xl font-semibold text-ink">—</p>
+          </div>
+          <div class="admin-card p-6">
+            <p class="font-eyebrow text-clay text-[10px] uppercase mb-2">Blog Posts</p>
+            <p id="statBlog" class="font-display text-3xl font-semibold text-ink">—</p>
+          </div>
+        </div>
+
+        <div class="admin-card mt-6 p-6">
+          <h2 class="font-display text-lg font-semibold text-ink mb-4">Recent bookings</h2>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Guest</th><th>Phone</th><th>Check-in</th><th>Status</th><th>Received</th></tr>
+              </thead>
+              <tbody id="overviewBookingsBody">
+                <tr><td colspan="5" class="text-center text-slate/50 py-8"><span class="neri-btn-loading"><span class="neri-spin"></span>Loading…</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PROPERTIES ============ -->
+      <section id="section-properties" class="admin-section hidden">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <p class="text-sm text-slate/60">Manage the live apartment listings shown on the website.</p>
+          <button id="addPropertyBtn" class="btn-clay rounded px-5 py-2.5 text-sm font-semibold">+ Add Property</button>
+        </div>
+        <div class="admin-card admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Apartment</th><th>Area</th><th>Type</th><th>Price / night</th><th>Verified</th><th>Featured</th><th></th></tr>
+            </thead>
+            <tbody id="propertiesBody">
+              <tr><td colspan="7" class="text-center text-slate/50 py-8"><span class="neri-btn-loading"><span class="neri-spin"></span>Loading…</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ BOOKINGS ============ -->
+      <section id="section-bookings" class="admin-section hidden">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <p class="text-sm text-slate/60">Enquiries submitted through the website booking form.</p>
+          <button id="refreshBookingsBtn" class="rounded px-4 py-2 text-xs font-semibold border border-black/10 text-ink hover:bg-black/5 transition-colors">Refresh</button>
+        </div>
+        <div class="admin-card admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Guest</th><th>Phone</th><th>Check-in</th><th>Message</th><th>Status</th><th>Received</th></tr>
+            </thead>
+            <tbody id="bookingsBody">
+              <tr><td colspan="6" class="text-center text-slate/50 py-8"><span class="neri-btn-loading"><span class="neri-spin"></span>Loading…</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ BLOG ============ -->
+      <section id="section-blog" class="admin-section hidden">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <p class="text-sm text-slate/60">Publish and edit guides that appear on the Neristay blog.</p>
+          <button id="addPostBtn" class="btn-clay rounded px-5 py-2.5 text-sm font-semibold">+ New Post</button>
+        </div>
+        <div class="admin-card admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Title</th><th>Category</th><th>Slug</th><th>Published</th><th></th></tr>
+            </thead>
+            <tbody id="blogBody">
+              <tr><td colspan="5" class="text-center text-slate/50 py-8"><span class="neri-btn-loading"><span class="neri-spin"></span>Loading…</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= PROPERTY DRAWER ================= -->
+<div id="propertyDrawerOverlay" class="admin-drawer-overlay">
+  <div class="admin-drawer" role="dialog" aria-modal="true" aria-labelledby="propertyDrawerTitle">
+    <div class="flex items-center justify-between mb-6">
+      <h2 id="propertyDrawerTitle" class="font-display text-xl font-semibold text-ink">Add Property</h2>
+      <button type="button" class="admin-icon-btn" data-drawer-close aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="propertyForm" class="space-y-4" novalidate>
+      <input type="hidden" name="_id">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Name</label>
+        <input name="name" type="text" required class="field w-full rounded px-4 py-3 text-sm" placeholder="e.g. 2-Bed Executive Apartment, Maitama">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Area</label>
+          <input name="area" type="text" required class="field w-full rounded px-4 py-3 text-sm" placeholder="Maitama">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Type</label>
+          <input name="type" type="text" class="field w-full rounded px-4 py-3 text-sm" placeholder="2 Bedroom Apartment">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Price / night (₦)</label>
+          <input name="pricePerNight" type="number" min="0" required class="field w-full rounded px-4 py-3 text-sm" placeholder="85000">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Bedrooms</label>
+          <input name="bedrooms" type="number" min="0" class="field w-full rounded px-4 py-3 text-sm" placeholder="2">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Cover image URL</label>
+        <input name="coverImage" type="url" class="field w-full rounded px-4 py-3 text-sm" placeholder="https://…">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Description</label>
+        <textarea name="description" rows="3" class="field w-full rounded px-4 py-3 text-sm" placeholder="Short description shown to guests"></textarea>
+      </div>
+      <div class="flex items-center gap-6 pt-1">
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate">
+          <input type="checkbox" name="isVerified" class="w-4 h-4 accent-clay" checked> Verified
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate">
+          <input type="checkbox" name="isFeatured" class="w-4 h-4 accent-clay"> Featured
+        </label>
+      </div>
+      <button id="propertySubmit" type="submit" class="btn-clay w-full rounded py-3.5 font-semibold text-sm mt-2">Save Property</button>
+      <p id="propertyFormStatus" role="status" class="text-sm min-h-[1.25rem]"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ================= BLOG POST DRAWER ================= -->
+<div id="postDrawerOverlay" class="admin-drawer-overlay">
+  <div class="admin-drawer" role="dialog" aria-modal="true" aria-labelledby="postDrawerTitle">
+    <div class="flex items-center justify-between mb-6">
+      <h2 id="postDrawerTitle" class="font-display text-xl font-semibold text-ink">New Post</h2>
+      <button type="button" class="admin-icon-btn" data-drawer-close aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="postForm" class="space-y-4" novalidate>
+      <input type="hidden" name="_id">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Title</label>
+        <input name="title" type="text" required class="field w-full rounded px-4 py-3 text-sm" placeholder="Post title">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Slug</label>
+          <input name="slug" type="text" class="field w-full rounded px-4 py-3 text-sm" placeholder="auto-generated if left blank">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Category</label>
+          <input name="category" type="text" class="field w-full rounded px-4 py-3 text-sm" placeholder="Guides">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Excerpt</label>
+        <textarea name="excerpt" rows="2" class="field w-full rounded px-4 py-3 text-sm" placeholder="Short summary shown on the blog index"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-slate/60 mb-1.5">Content</label>
+        <textarea name="content" rows="8" class="field w-full rounded px-4 py-3 text-sm" placeholder="Full post content"></textarea>
+      </div>
+      <label class="flex items-center gap-2 text-sm font-semibold text-slate pt-1">
+        <input type="checkbox" name="published" class="w-4 h-4 accent-clay" checked> Published
+      </label>
+      <button id="postSubmit" type="submit" class="btn-clay w-full rounded py-3.5 font-semibold text-sm mt-2">Save Post</button>
+      <p id="postFormStatus" role="status" class="text-sm min-h-[1.25rem]"></p>
+    </form>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

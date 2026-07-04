@@ -60,13 +60,38 @@
       });
   }
 
+  /* ---------- Auth token helpers ----------
+     The signed-in user's token/profile are cached in localStorage
+     under 'neri_auth' by js/auth.js. Reading it here (rather than
+     importing auth.js) keeps api.js dependency-free and loadable
+     on its own. */
+  function getStoredAuth() {
+    try {
+      var raw = window.localStorage.getItem('neri_auth');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function authHeaders() {
+    var auth = getStoredAuth();
+    return auth && auth.token ? { Authorization: 'Bearer ' + auth.token } : {};
+  }
+
   function request(path, options, onSlowRetry) {
     options = options || {};
     var url = BASE_URL + path;
 
+    var headers = options.headers || {};
+    if (options.auth) {
+      var ah = authHeaders();
+      for (var hk in ah) { if (Object.prototype.hasOwnProperty.call(ah, hk)) headers[hk] = ah[hk]; }
+    }
+
     var opts = {
       method: options.method || 'GET',
-      headers: options.headers || {}
+      headers: headers
     };
     if (options.body !== undefined) {
       opts.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
@@ -84,12 +109,24 @@
     });
   }
 
-  function get(path, onSlowRetry) {
-    return request(path, { method: 'GET' }, onSlowRetry);
+  function get(path, onSlowRetry, auth) {
+    return request(path, { method: 'GET', auth: auth }, onSlowRetry);
   }
 
-  function post(path, body, onSlowRetry) {
-    return request(path, { method: 'POST', body: body }, onSlowRetry);
+  function post(path, body, onSlowRetry, auth) {
+    return request(path, { method: 'POST', body: body, auth: auth }, onSlowRetry);
+  }
+
+  function put(path, body, onSlowRetry, auth) {
+    return request(path, { method: 'PUT', body: body, auth: auth }, onSlowRetry);
+  }
+
+  function patch(path, body, onSlowRetry, auth) {
+    return request(path, { method: 'PATCH', body: body, auth: auth }, onSlowRetry);
+  }
+
+  function del(path, onSlowRetry, auth) {
+    return request(path, { method: 'DELETE', auth: auth }, onSlowRetry);
   }
 
   function toQueryString(query) {
@@ -105,7 +142,7 @@
   }
 
   window.NeriAPI = {
-    /* Properties */
+    /* Properties (public) */
     getProperties: function (query, onSlowRetry) {
       return get('/api/properties' + toQueryString(query), onSlowRetry);
     },
@@ -113,7 +150,18 @@
       return get('/api/properties/' + encodeURIComponent(idOrSlug), onSlowRetry);
     },
 
-    /* Blog */
+    /* Properties (admin, requires auth) */
+    createProperty: function (payload, onSlowRetry) {
+      return post('/api/properties', payload, onSlowRetry, true);
+    },
+    updateProperty: function (id, payload, onSlowRetry) {
+      return put('/api/properties/' + encodeURIComponent(id), payload, onSlowRetry, true);
+    },
+    deleteProperty: function (id, onSlowRetry) {
+      return del('/api/properties/' + encodeURIComponent(id), onSlowRetry, true);
+    },
+
+    /* Blog (public) */
     getBlogPosts: function (query, onSlowRetry) {
       return get('/api/blog' + toQueryString(query), onSlowRetry);
     },
@@ -121,9 +169,39 @@
       return get('/api/blog/' + encodeURIComponent(idOrSlug), onSlowRetry);
     },
 
-    /* Bookings */
+    /* Blog (admin, requires auth) */
+    createBlogPost: function (payload, onSlowRetry) {
+      return post('/api/blog', payload, onSlowRetry, true);
+    },
+    updateBlogPost: function (id, payload, onSlowRetry) {
+      return put('/api/blog/' + encodeURIComponent(id), payload, onSlowRetry, true);
+    },
+    deleteBlogPost: function (id, onSlowRetry) {
+      return del('/api/blog/' + encodeURIComponent(id), onSlowRetry, true);
+    },
+
+    /* Bookings (public create) */
     createBooking: function (payload, onSlowRetry) {
       return post('/api/bookings', payload, onSlowRetry);
+    },
+
+    /* Bookings (admin, requires auth) */
+    getBookings: function (query, onSlowRetry) {
+      return get('/api/bookings' + toQueryString(query), onSlowRetry, true);
+    },
+    updateBookingStatus: function (id, status, onSlowRetry) {
+      return patch('/api/bookings/' + encodeURIComponent(id), { status: status }, onSlowRetry, true);
+    },
+
+    /* Auth */
+    signup: function (payload, onSlowRetry) {
+      return post('/api/auth/register', payload, onSlowRetry);
+    },
+    login: function (payload, onSlowRetry) {
+      return post('/api/auth/login', payload, onSlowRetry);
+    },
+    getMe: function (onSlowRetry) {
+      return get('/api/auth/me', onSlowRetry, true);
     },
 
     /* Chat */

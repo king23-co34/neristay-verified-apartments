@@ -97,8 +97,8 @@
       if (isLoading) {
         submitBtn.disabled = true;
         submitBtn.innerHTML =
-          '<span class="neri-btn-loading"><span class="neri-spin" style="border-color:rgba(255,255,255,.3);' +
-          'border-top-color:#fff;border-right-color:#fff;"></span>' + (label || 'Sending…') + '</span>';
+          '<span class="neri-btn-loading"><span class="neri-spin" style="border-color:rgba(255,255,255,.6);' +
+          'color:#fff;"></span>' + (label || 'Sending…') + '</span>';
       } else {
         submitBtn.disabled = false;
         submitBtn.innerHTML = submitBtnDefaultHTML;
